@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/Nin10doLetsPlay/AI-Emoji-Chat-Room/issues"
   },
-  "homepage": "https://github.com/Nin10doLetsPlay/AI-Emoji-Chat-Room#readme"
+  "homepage": "https://github.com/Nin10doLetsPlay/AI-Emoji-Chat-Room#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
 }
