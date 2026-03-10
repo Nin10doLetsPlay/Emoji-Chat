@@ -204,44 +204,51 @@ socket.on('matched', () => {
 })
 
 socket.on('chat-message', (messageData) => {
-  const messageWrapper = document.createElement('div');
-  messageWrapper.classList.add('message-wrapper');
+  const messageWrapper = document.createElement('div')
+  messageWrapper.classList.add('message-wrapper')
 
-  const messageBubble = document.createElement('div');
-  messageBubble.classList.add('message-bubble');
+  const messageBubble = document.createElement('div')
+  messageBubble.classList.add('message-bubble')
 
-  if (messageData.username === currentUsername) {
-    messageWrapper.classList.add('my-message');
+  if (messageData.senderId === socket.id) {
+    messageWrapper.classList.add('my-message')
   } else {
-    messageWrapper.classList.add('other-message');
+    messageWrapper.classList.add('other-message')
   }
 
-  const usernameDiv = document.createElement('div');
-  usernameDiv.classList.add('message-username');
-  usernameDiv.textContent = messageData.username;
+  const usernameDiv = document.createElement('div')
+  usernameDiv.classList.add('message-username')
+  usernameDiv.textContent = messageData.senderId === socket.id ? 'You' : 'Stranger'
 
-  const textDiv = document.createElement('div');
-  textDiv.classList.add('message-text');
-  textDiv.textContent = messageData.text;
+  const contentDiv = document.createElement('div')
+  contentDiv.classList.add('message-text')
 
-  messageBubble.appendChild(usernameDiv);
-  messageBubble.appendChild(textDiv);
+  if (messageData.text) {
+    contentDiv.textContent = messageData.text
+  } else if (messageData.emoji) {
+    if (messageData.emoji.type === 'text') {
+      contentDiv.textContent = messageData.emoji.value
+    } else if (messageData.emoji.type === 'image') {
+      const img = document.createElement('img')
+      img.src = messageData.emoji.value
+      img.alt = 'Emoji'
+      img.classList.add('chat-emoji-img')
+      contentDiv.appendChild(img)
+    }
+  }
 
-  messageWrapper.appendChild(messageBubble);
+  messageBubble.appendChild(usernameDiv)
+  messageBubble.appendChild(contentDiv)
+  messageWrapper.appendChild(messageBubble)
 
-  chat.appendChild(messageWrapper);
-  chat.scrollTop = chat.scrollHeight;
-});
+  chat.appendChild(messageWrapper)
+  chat.scrollTop = chat.scrollHeight
+})
 
 function deleteGeneratedEmoji (index) {
   generatedEmojis.splice(index, 1)
   saveGeneratedEmojis()
   renderEmojis()
-}
-
-function closeGeneratePanel () {
-  selectedBaseEmoji = null
-  generatePanel.classList.add('hidden')
 }
 
 function openGeneratePanel (emojiItemData) {
@@ -320,28 +327,11 @@ User idea: ${prompt}
   }
 }
 
-function sendEmoji (emojiItemData) {
-  const div = document.createElement('div')
-  div.classList.add('message')
-
-  const usernameSpan = document.createElement('span')
-  usernameSpan.textContent = `${currentUsername}: `
-  div.appendChild(usernameSpan)
-
-  if (emojiItemData.type === 'text') {
-    const emojiSpan = document.createElement('span')
-    emojiSpan.textContent = emojiItemData.value
-    div.appendChild(emojiSpan)
-  } else if (emojiItemData.type === 'image') {
-    const img = document.createElement('img')
-    img.src = emojiItemData.value
-    img.alt = 'Generated emoji'
-    img.classList.add('chat-emoji-img')
-    div.appendChild(img)
-  }
-
-  chat.appendChild(div)
-  chat.scrollTop = chat.scrollHeight
+function sendEmoji(emojiItemData) {
+  socket.emit('chat-message', {
+    username: currentUsername,
+    emoji: emojiItemData
+  });
 }
 
 generateEmojiBtn.onclick = generateFakeEmoji
