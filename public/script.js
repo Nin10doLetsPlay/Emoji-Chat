@@ -84,7 +84,6 @@ function startSearching () {
 
 function showScreen (screenToShow) {
   welcomeScreen.classList.add('hidden')
-  signupScreen.classList.add('hidden')
   searchingScreen.classList.add('hidden')
   chatScreen.classList.add('hidden')
 
@@ -192,10 +191,7 @@ function renderEmojis () {
   })
 }
 
-findStrangerBtn.onclick = () => {
-  showScreen(searchingScreen)
-  socket.emit('find-stranger')
-}
+findStrangerBtn.onclick = startSearching
 
 nextStrangerBtn.onclick = () => {
   socket.emit('leave-chat')
@@ -393,5 +389,4 @@ cancelGenerateBtn.onclick = closeGeneratePanel
 
 loadGeneratedEmojis()
 renderEmojis()
-updateAuthUI()
 updateChatAvailability()
