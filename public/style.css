@@ -111,30 +111,70 @@ button:active {
   gap: 10px;
 }
 
-.message {
-  align-self: flex-start;
+
+.message-wrapper {
+  display: flex;
+  width: 100%;
+}
+
+.my-message {
+  justify-content: flex-end;
+}
+
+.other-message {
+  justify-content: flex-start;
+}
+
+.message-bubble {
+  max-width: 65%;
   background: #1f1f1f;
-  border: 1px solid #333333;
-  padding: 10px 14px;
   border-radius: 12px;
-  max-width: 80%;
-  word-wrap: break-word;
+  padding: 10px 12px;
+  border: 1px solid #333;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  overflow-wrap: break-word;
+
   opacity: 0;
   transform: translateY(12px);
   animation: slideFadeIn 0.35s ease forwards;
 }
 
+.message-username {
+  font-size: 0.7rem;
+  color: #9a9a9a;
+  font-weight: 500;
+}
+
+.message-text {
+  font-size: 0.95rem;
+  overflow-wrap: break-word;
+}
+
+.my-message .message-bubble {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
 .emoji-bar {
   display: flex;
-  gap: 6px;          /* spacing between emojis */
-  padding: 6px 8px;  /* inner space of the bar */
+  gap: 6px;
+  padding: 6px 8px;
   border: 1px solid #262626;
   border-radius: 10px;
   background: #0f0f0f;
   margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
 .emoji-btn {
+  padding: 0;
+  border-radius: 0;
+  color: inherit;
+  font-weight: normal;
   font-size: 22px;
   background: transparent;
   border: none;
@@ -193,6 +233,12 @@ button:active {
   gap: 10px;
 }
 
+.system-message {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #777;
+}
+
 .generated-emoji-img,
 .chat-emoji-img {
   width: 28px;
@@ -203,6 +249,31 @@ button:active {
 
 .chat-emoji-img {
   vertical-align: middle;
+}
+
+.delete-emoji-btn {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 12px;
+  background: #ff4d4d;
+  color: white;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.emoji-item:hover .delete-emoji-btn {
+  display: inline-flex;
+}
+
+.matchmaking-row {
+  display: flex;
+  gap: 10px;
 }
 
 @keyframes slideFadeIn {

@@ -1,55 +1,98 @@
-const express = require("express");
-const { GoogleGenAI } = require("@google/genai");
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
 const PORT = 3000;
 
-app.use(express.static("public"));
-app.use(express.json());
+app.use(express.static('public'));
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY
-});
+let waitingUser = null;
+let roomCounter = 1;
 
-app.post("/generate-emoji", async (req, res) => {
-  const { baseEmoji, prompt } = req.body;
+const userRoomMap = new Map();
 
-  try {
-    const fullPrompt = `
-Create a single tiny custom emoji/sticker icon inspired by "${baseEmoji}".
-Style: simple, clean, centered, transparent background, square composition, emoji-like.
-User idea: ${prompt}
-`;
+io.on('connection', (socket) => {
+  console.log('User connected:', socket.id);
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-flash-image-preview",
-      contents: fullPrompt
-    });
+  socket.on('find-stranger', () => {
+    // if the user was already waiting, don't duplicate them
+    if (waitingUser === socket.id) {
+      return;
+    }
 
-    let imageData = null;
+    // if no one is waiting, store this user
+    if (waitingUser === null) {
+      waitingUser = socket.id;
+      socket.emit('system-message', 'Waiting for a stranger...');
+      return;
+    }
 
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData?.data) {
-        imageData = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-        break;
+    // if the waiting user disconnected somehow
+    const otherSocket = io.sockets.sockets.get(waitingUser);
+    if (!otherSocket) {
+      waitingUser = socket.id;
+      socket.emit('system-message', 'Waiting for a stranger...');
+      return;
+    }
+
+    // create a room for the pair
+    const roomName = `room-${roomCounter++}`;
+
+    socket.join(roomName);
+    otherSocket.join(roomName);
+
+    userRoomMap.set(socket.id, roomName);
+    userRoomMap.set(otherSocket.id, roomName);
+
+    io.to(roomName).emit('matched');
+    io.to(roomName).emit('system-message', 'A stranger has connected.');
+
+    waitingUser = null;
+  });
+
+  socket.on('chat-message', (message) => {
+    const roomName = userRoomMap.get(socket.id);
+    if (!roomName) return;
+
+    io.to(roomName).emit('chat-message', message);
+  });
+
+  socket.on('leave-chat', () => {
+    handleLeave(socket);
+  });
+
+  socket.on('disconnect', () => {
+    handleLeave(socket);
+    console.log('User disconnected:', socket.id);
+  });
+
+  function handleLeave(socket) {
+    // remove from waiting queue if needed
+    if (waitingUser === socket.id) {
+      waitingUser = null;
+    }
+
+    const roomName = userRoomMap.get(socket.id);
+    if (!roomName) return;
+
+    socket.to(roomName).emit('system-message', 'A stranger has disconnected.');
+
+    userRoomMap.delete(socket.id);
+    socket.leave(roomName);
+
+    // remove anyone else still tracked in this room if they leave later naturally
+    for (const [userId, room] of userRoomMap.entries()) {
+      if (room === roomName && userId === socket.id) {
+        userRoomMap.delete(userId);
       }
     }
-
-    if (!imageData) {
-      return res.status(500).json({
-        error: "No image was returned by Gemini."
-      });
-    }
-
-    res.json({ imageData });
-  } catch (error) {
-    console.error("Gemini generation error:", error);
-    res.status(500).json({
-      error: "Failed to generate emoji image."
-    });
   }
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

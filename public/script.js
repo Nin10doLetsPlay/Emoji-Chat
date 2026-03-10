@@ -17,14 +17,21 @@ const chat = document.getElementById('chat')
 const input = document.getElementById('messageInput')
 const sendBtn = document.getElementById('sendBtn')
 
+const socket = io()
+
+const findStrangerBtn = document.getElementById('findStrangerBtn')
+const leaveChatBtn = document.getElementById('leaveChatBtn')
+
 const emojiBar = document.getElementById('emojiBar')
-let emojiList = [
-  { type: 'text', value: '👋' },
-  { type: 'text', value: '😭' },
-  { type: 'text', value: '💀' },
-  { type: 'text', value: '🔥' },
-  { type: 'text', value: '🗿' }
+const defaultEmojis = [
+  { type: 'text', value: '👋', default: true },
+  { type: 'text', value: '😭', default: true },
+  { type: 'text', value: '💀', default: true },
+  { type: 'text', value: '🔥', default: true },
+  { type: 'text', value: '🗿', default: true }
 ]
+
+let generatedEmojis = []
 
 const generatePanel = document.getElementById('generatePanel')
 const generateTitle = document.getElementById('generateTitle')
@@ -89,27 +96,39 @@ function updateAuthUI () {
   }
 }
 
-function sendMessage () {
-  const message = input.value.trim()
+function sendMessage() {
+  const message = input.value.trim();
 
   if (message === '') {
-    return
+    return;
   }
 
-  const div = document.createElement('div')
-  div.classList.add('message')
-  div.textContent = `${currentUsername}: ${message}`
+  socket.emit('chat-message', {
+    username: currentUsername,
+    text: message
+  });
 
-  chat.appendChild(div)
+  input.value = '';
+}
 
-  input.value = ''
-  chat.scrollTop = chat.scrollHeight
+function saveGeneratedEmojis () {
+  localStorage.setItem('generatedEmojis', JSON.stringify(generatedEmojis))
+}
+
+function loadGeneratedEmojis () {
+  const savedEmojis = localStorage.getItem('generatedEmojis')
+
+  if (savedEmojis) {
+    generatedEmojis = JSON.parse(savedEmojis)
+  }
 }
 
 function renderEmojis () {
   emojiBar.innerHTML = ''
 
-  emojiList.forEach(emojiItemData => {
+  const allEmojis = [...defaultEmojis, ...generatedEmojis]
+
+  allEmojis.forEach((emojiItemData, index) => {
     const emojiItem = document.createElement('div')
     emojiItem.classList.add('emoji-item')
 
@@ -141,24 +160,109 @@ function renderEmojis () {
 
     emojiItem.appendChild(emojiButton)
     emojiItem.appendChild(generateButton)
+
+    if (!emojiItemData.default) {
+      const deleteButton = document.createElement('button')
+      deleteButton.classList.add('delete-emoji-btn')
+      deleteButton.textContent = '✖'
+
+      deleteButton.onclick = event => {
+        event.stopPropagation()
+        deleteGeneratedEmoji(index - defaultEmojis.length)
+      }
+
+      emojiItem.appendChild(deleteButton)
+    }
+
     emojiBar.appendChild(emojiItem)
   })
 }
 
-function openGeneratePanel(emojiItemData) {
-  selectedBaseEmoji = emojiItemData;
+findStrangerBtn.onclick = () => {
+  socket.emit('find-stranger')
+}
 
-  let label = "generated emoji";
+leaveChatBtn.onclick = () => {
+  socket.emit('leave-chat')
+}
 
-  if (emojiItemData.type === "text") {
-    label = emojiItemData.value;
-  } else if (emojiItemData.type === "image" && emojiItemData.base) {
-    label = emojiItemData.base;
+function addSystemMessage(text) {
+  const div = document.createElement('div');
+  div.classList.add('system-message');
+  div.textContent = text;
+
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+socket.on('system-message', text => {
+  addSystemMessage(text)
+})
+
+socket.on('matched', () => {
+  addSystemMessage('You are now connected to a stranger.')
+})
+
+socket.on('chat-message', (messageData) => {
+  const messageWrapper = document.createElement('div');
+  messageWrapper.classList.add('message-wrapper');
+
+  const messageBubble = document.createElement('div');
+  messageBubble.classList.add('message-bubble');
+
+  if (messageData.username === currentUsername) {
+    messageWrapper.classList.add('my-message');
+  } else {
+    messageWrapper.classList.add('other-message');
   }
 
-  generateTitle.textContent = `Generate from ${label}`;
-  generatePromptInput.value = "";
-  generatePanel.classList.remove("hidden");
+  const usernameDiv = document.createElement('div');
+  usernameDiv.classList.add('message-username');
+  usernameDiv.textContent = messageData.username;
+
+  const textDiv = document.createElement('div');
+  textDiv.classList.add('message-text');
+  textDiv.textContent = messageData.text;
+
+  messageBubble.appendChild(usernameDiv);
+  messageBubble.appendChild(textDiv);
+
+  messageWrapper.appendChild(messageBubble);
+
+  chat.appendChild(messageWrapper);
+  chat.scrollTop = chat.scrollHeight;
+});
+
+function deleteGeneratedEmoji (index) {
+  generatedEmojis.splice(index, 1)
+  saveGeneratedEmojis()
+  renderEmojis()
+}
+
+function closeGeneratePanel () {
+  selectedBaseEmoji = null
+  generatePanel.classList.add('hidden')
+}
+
+function openGeneratePanel (emojiItemData) {
+  selectedBaseEmoji = emojiItemData
+
+  let label = 'generated emoji'
+
+  if (emojiItemData.type === 'text') {
+    label = emojiItemData.value
+  } else if (emojiItemData.type === 'image' && emojiItemData.base) {
+    label = emojiItemData.base
+  }
+
+  generateTitle.textContent = `Generate from ${label}`
+  generatePromptInput.value = ''
+  generatePanel.classList.remove('hidden')
+}
+
+function closeGeneratePanel () {
+  selectedBaseEmoji = null
+  generatePanel.classList.add('hidden')
 }
 
 async function generateFakeEmoji () {
@@ -169,9 +273,9 @@ async function generateFakeEmoji () {
   }
 
   const baseEmojiValue =
-  selectedBaseEmoji.type === "text"
-    ? selectedBaseEmoji.value
-    : selectedBaseEmoji.base || "custom emoji";
+    selectedBaseEmoji.type === 'text'
+      ? selectedBaseEmoji.value
+      : selectedBaseEmoji.base || 'custom emoji'
 
   const fullPrompt = `
 Create a single tiny emoji-style sticker icon inspired by "${baseEmojiValue}".
@@ -195,12 +299,15 @@ User idea: ${prompt}
 
     const imageSrc = await convertImageToPNG(img.src)
 
-    emojiList.push({
+    generatedEmojis.push({
       type: 'image',
       value: imageSrc,
+      default: false,
       base: baseEmojiValue,
       prompt: prompt
     })
+
+    saveGeneratedEmojis()
 
     renderEmojis()
     closeGeneratePanel()
@@ -306,5 +413,6 @@ input.addEventListener('keydown', event => {
   }
 })
 
+loadGeneratedEmojis()
 renderEmojis()
 updateAuthUI()

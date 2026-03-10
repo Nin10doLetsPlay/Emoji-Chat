@@ -1,80 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Emoji Chat</title>
-    <link rel="stylesheet" href="style.css">
-</head>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-<body>
+  <body>
     <div class="app">
-        <h1>AI Emoji Chat</h1>
+      <h1>AI Emoji Chat</h1>
 
-        <section id="welcomeScreen" class="screen">
-            <p class="subtitle">Create cursed emoji language with your friends.</p>
+      <section id="welcomeScreen" class="screen">
+        <p class="subtitle">Create cursed emoji language with your friends.</p>
 
-            <div class="button-column">
-                <button id="anonymousBtn">Continue as Anonymous</button>
-                <button id="showLoginBtn">Log In</button>
-                <button id="showSignupBtn">Sign Up</button>
-            </div>
-        </section>
+        <div class="button-column">
+          <button id="anonymousBtn">Continue as Anonymous</button>
+          <button id="showLoginBtn">Log In</button>
+          <button id="showSignupBtn">Sign Up</button>
+        </div>
+      </section>
 
-        <section id="loginScreen" class="screen hidden">
-            <h1>Log In</h1>
+      <section id="loginScreen" class="screen hidden">
+        <h1>Log In</h1>
 
-            <input id="loginUsername" type="text" placeholder="Username">
-            <input id="loginPassword" type="password" placeholder="Password">
+        <input id="loginUsername" type="text" placeholder="Username" />
+        <input id="loginPassword" type="password" placeholder="Password" />
 
-            <div class="button-column">
-                <button id="loginBtn">Log In</button>
-                <button id="backFromLoginBtn">Back</button>
-            </div>
-        </section>
+        <div class="button-column">
+          <button id="loginBtn">Log In</button>
+          <button id="backFromLoginBtn">Back</button>
+        </div>
+      </section>
 
-        <section id="signupScreen" class="screen hidden">
-            <h1>Sign Up</h1>
+      <section id="signupScreen" class="screen hidden">
+        <h1>Sign Up</h1>
 
-            <input id="signupUsername" type="text" placeholder="Username">
-            <input id="signupPassword" type="password" placeholder="Password">
+        <input id="signupUsername" type="text" placeholder="Username" />
+        <input id="signupPassword" type="password" placeholder="Password" />
 
-            <div class="button-column">
-                <button id="signupBtn">Create Account</button>
-                <button id="backFromSignupBtn">Back</button>
-            </div>
-        </section>
+        <div class="button-column">
+          <button id="signupBtn">Create Account</button>
+          <button id="backFromSignupBtn">Back</button>
+        </div>
+      </section>
 
-        <section id="chatScreen" class="screen hidden">
-            <div class="top-bar">
-                <button id="loginTopBtn">Log In</button>
-                <button id="logoutBtn" class="hidden">Log Out</button>
-            </div>
+      <div class="matchmaking-row">
+        <button id="findStrangerBtn">Find Stranger</button>
+        <button id="leaveChatBtn">Leave Chat</button>
+      </div>
 
-            <div id="chat"></div>
+      <section id="chatScreen" class="screen hidden">
+        <div class="top-bar">
+          <button id="loginTopBtn">Log In</button>
+          <button id="logoutBtn" class="hidden">Log Out</button>
+        </div>
 
-            <div id="emojiBar" class="emoji-bar"></div>
+        <div id="chat"></div>
 
-            <div id="generatePanel" class="generate-panel hidden">
-                <div id="generateTitle">Generate from emoji</div>
-                <input id="generatePromptInput" type="text" placeholder="Type your cursed idea...">
-                <div class="generate-actions">
-                    <button id="generateEmojiBtn">Generate</button>
-                    <button id="cancelGenerateBtn">Cancel</button>
-                </div>
-            </div>
+        <div id="emojiBar" class="emoji-bar"></div>
 
-            <div class="input-row">
-                <input id="messageInput" type="text" placeholder="Type a message...">
-                <button id="sendBtn">Send</button>
-            </div>
-        </section>
+        <div id="generatePanel" class="generate-panel hidden">
+          <div id="generateTitle">Generate from emoji</div>
+          <input
+            id="generatePromptInput"
+            type="text"
+            placeholder="Type your cursed idea..."
+          />
+          <div class="generate-actions">
+            <button id="generateEmojiBtn">Generate</button>
+            <button id="cancelGenerateBtn">Cancel</button>
+          </div>
+        </div>
 
+        <div class="input-row">
+          <input
+            id="messageInput"
+            type="text"
+            placeholder="Type a message..."
+          />
+          <button id="sendBtn">Send</button>
+        </div>
+      </section>
     </div>
 
+    <script src="/socket.io/socket.io.js"></script>
     <script src="https://js.puter.com/v2/"></script>
     <script src="script.js"></script>
-</body>
-
+  </body>
 </html>
