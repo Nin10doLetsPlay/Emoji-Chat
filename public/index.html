@@ -3,45 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Emoji Chat</title>
+    <title>Emoji Chat</title>
     <link rel="stylesheet" href="style.css" />
   </head>
 
   <body>
     <div class="app">
-      <h1>AI Emoji Chat</h1>
+      <h1>Emoji Chat</h1>
 
       <section id="welcomeScreen" class="screen">
         <p class="subtitle">Create cursed emoji language with your friends.</p>
 
         <div class="button-column">
           <button id="findStrangerBtn">Find Stranger</button>
-          <button id="showLoginBtn">Log In</button>
-          <button id="showSignupBtn">Sign Up</button>
-        </div>
-      </section>
-
-      <section id="loginScreen" class="screen hidden">
-        <h1>Log In</h1>
-
-        <input id="loginUsername" type="text" placeholder="Username" />
-        <input id="loginPassword" type="password" placeholder="Password" />
-
-        <div class="button-column">
-          <button id="loginBtn">Log In</button>
-          <button id="backFromLoginBtn">Back</button>
-        </div>
-      </section>
-
-      <section id="signupScreen" class="screen hidden">
-        <h1>Sign Up</h1>
-
-        <input id="signupUsername" type="text" placeholder="Username" />
-        <input id="signupPassword" type="password" placeholder="Password" />
-
-        <div class="button-column">
-          <button id="signupBtn">Create Account</button>
-          <button id="backFromSignupBtn">Back</button>
         </div>
       </section>
 
@@ -56,11 +30,6 @@
           <div class="chat-top-actions">
             <button id="nextStrangerBtn">Next Stranger</button>
             <button id="leaveChatBtn">Leave Chat</button>
-          </div>
-
-          <div>
-            <button id="loginTopBtn">Log In</button>
-            <button id="logoutBtn" class="hidden">Log Out</button>
           </div>
         </div>
 

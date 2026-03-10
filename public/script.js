@@ -1,16 +1,5 @@
 const welcomeScreen = document.getElementById('welcomeScreen')
-const loginScreen = document.getElementById('loginScreen')
-const signupScreen = document.getElementById('signupScreen')
 const chatScreen = document.getElementById('chatScreen')
-const loginTopBtn = document.getElementById('loginTopBtn')
-
-const showLoginBtn = document.getElementById('showLoginBtn')
-const showSignupBtn = document.getElementById('showSignupBtn')
-const backFromLoginBtn = document.getElementById('backFromLoginBtn')
-const backFromSignupBtn = document.getElementById('backFromSignupBtn')
-const loginBtn = document.getElementById('loginBtn')
-const signupBtn = document.getElementById('signupBtn')
-const logoutBtn = document.getElementById('logoutBtn')
 
 const chat = document.getElementById('chat')
 const nextStrangerBtn = document.getElementById('nextStrangerBtn')
@@ -95,7 +84,6 @@ function startSearching () {
 
 function showScreen (screenToShow) {
   welcomeScreen.classList.add('hidden')
-  loginScreen.classList.add('hidden')
   signupScreen.classList.add('hidden')
   searchingScreen.classList.add('hidden')
   chatScreen.classList.add('hidden')
@@ -103,7 +91,7 @@ function showScreen (screenToShow) {
   screenToShow.classList.remove('hidden')
 }
 
-function updateChatAvailability() {
+function updateChatAvailability () {
   const emojiButtons = document.querySelectorAll('.emoji-btn')
 
   emojiButtons.forEach(button => {
@@ -111,16 +99,6 @@ function updateChatAvailability() {
     button.style.opacity = isMatched ? '1' : '0.5'
     button.style.pointerEvents = isMatched ? 'auto' : 'none'
   })
-}
-
-function updateAuthUI () {
-  if (currentUsername === 'Anonymous') {
-    loginTopBtn.classList.remove('hidden')
-    logoutBtn.classList.add('hidden')
-  } else {
-    loginTopBtn.classList.add('hidden')
-    logoutBtn.classList.remove('hidden')
-  }
 }
 
 function saveGeneratedEmojis () {
@@ -157,6 +135,30 @@ function renderEmojis () {
       emojiButton.appendChild(img)
     }
 
+    let pressTimer = null
+    let longPressTriggered = false
+
+    emojiButton.addEventListener('touchstart', () => {
+      longPressTriggered = false
+
+      pressTimer = setTimeout(() => {
+        longPressTriggered = true
+        openGeneratePanel(emojiItemData)
+      }, 500)
+    })
+
+    emojiButton.addEventListener('touchend', () => {
+      clearTimeout(pressTimer)
+
+      if (!longPressTriggered) {
+        sendEmoji(emojiItemData)
+      }
+    })
+
+    emojiButton.addEventListener('touchmove', () => {
+      clearTimeout(pressTimer)
+    })
+
     emojiButton.onclick = () => {
       sendEmoji(emojiItemData)
     }
@@ -190,7 +192,10 @@ function renderEmojis () {
   })
 }
 
-findStrangerBtn.onclick = startSearching
+findStrangerBtn.onclick = () => {
+  showScreen(searchingScreen)
+  socket.emit('find-stranger')
+}
 
 nextStrangerBtn.onclick = () => {
   socket.emit('leave-chat')
@@ -386,57 +391,6 @@ function sendEmoji (emojiItemData) {
 generateEmojiBtn.onclick = generateFakeEmoji
 cancelGenerateBtn.onclick = closeGeneratePanel
 
-showLoginBtn.onclick = () => {
-  showScreen(loginScreen)
-}
-
-showSignupBtn.onclick = () => {
-  showScreen(signupScreen)
-}
-
-backFromLoginBtn.onclick = () => {
-  showScreen(welcomeScreen)
-}
-
-backFromSignupBtn.onclick = () => {
-  showScreen(welcomeScreen)
-}
-
-loginBtn.onclick = () => {
-  const loginUsername = document.getElementById('loginUsername').value.trim()
-
-  if (loginUsername === '') {
-    alert('Please enter a username.')
-    return
-  }
-
-  currentUsername = loginUsername
-  updateAuthUI()
-  showScreen(chatScreen)
-}
-
-signupBtn.onclick = () => {
-  const signupUsername = document.getElementById('signupUsername').value.trim()
-
-  if (signupUsername === '') {
-    alert('Please enter a username.')
-    return
-  }
-
-  currentUsername = signupUsername
-  updateAuthUI()
-  showScreen(chatScreen)
-}
-
-logoutBtn.onclick = () => {
-  currentUsername = 'Anonymous'
-  updateAuthUI()
-  showScreen(welcomeScreen)
-}
-
-loginTopBtn.onclick = () => {
-  showScreen(loginScreen)
-}
 loadGeneratedEmojis()
 renderEmojis()
 updateAuthUI()

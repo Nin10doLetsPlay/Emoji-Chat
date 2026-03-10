@@ -327,6 +327,15 @@ button:active {
   animation: pulseFade 1.4s ease-in-out infinite;
 }
 
+@media (max-width: 768px) {
+  .app {
+    padding: 16px;
+    border-radius: 0;
+    max-width: 100%;
+    min-height: 100vh;
+  }
+}  
+
 @keyframes pulseFade {
   0% {
     opacity: 0.35;
